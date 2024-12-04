@@ -2,10 +2,14 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Axios } from "axios";
+import toast from "react-hot-toast";
+
+
 
 
 const signupPage = () => {
+
+    const router = useRouter()
 
     const [user, setUser] = useState({
         username: "",
@@ -13,12 +17,36 @@ const signupPage = () => {
         email: "",
     });
 
-    const onSignup = async (e:React.FormEvent) => {
+    const onSignup = async (e:any) => {
         e.preventDefault();
-        console.log(user)
-    }
+        
+        
 
-    return <div className="flex flex-col bg-white items-center justify-center p-8 h-screen w-full">
+            const response = await fetch("/api/user/signup", {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              method: "POST",
+              body: JSON.stringify(user),
+            });
+      
+            const data = await response.json();
+      
+            if (data.error) {
+              toast.error(data.error);
+              return;
+            }
+       router.push("/")
+       console.log("signup")
+            toast.success("Signup successful!");
+
+        }
+                
+    
+
+
+    return (
+    <div className="flex flex-col bg-white items-center justify-center p-8 h-screen w-full">
 
 <form onSubmit={onSignup}>
      
@@ -57,6 +85,7 @@ const signupPage = () => {
      </div>
      </form>
      </div>
+    )
 }
 
 export default signupPage;

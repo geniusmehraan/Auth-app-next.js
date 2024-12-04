@@ -2,19 +2,45 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Axios } from "axios";
+import toast from "react-hot-toast";
+import axios from "axios";
+
 
 
 const loginPage = () => {
 
-    const [user, setUser] = useState({
-        password: "",
-        email: "",
-    });
+    const router = useRouter()
 
-    const onLogin = async (e:React.FormEvent) => {
-        e.preventDefault();
-        console.log(user)
+    const [password, setpassword] = useState("");
+    const [email,setemail] = useState("")
+
+    const onLogin = async (e:any) => {
+        
+        try {
+            e.preventDefault();
+
+            const response = await axios.post("/api/user/login",{
+                password:password,
+                email:email,
+                
+            })
+
+            const data = response.data
+
+            if(data.error){
+                throw new Error(data.error)
+            }
+            
+            toast.success(data.message)
+            
+              router.push("/")
+
+              return data
+
+        } catch (error:any) {
+            console.log(error.message)
+            toast.error(error.message)
+        }
     }
 
     return <div className="flex flex-col bg-white items-center justify-center p-8 h-screen w-full">
@@ -33,12 +59,12 @@ const loginPage = () => {
 
  <div className="flex flex-col gap-1 items-start justify-center">
  <label className="text-xl text-gray-300 ml-2">Email</label>
- <input type="email" value={user.email} onChange={(e) => setUser({...user, email: e.target.value})} className="px-3 py-2 border focus:border-none w-[300px] text-white border-none bg-black rounded-lg" placeholder="Enter Your email"/>
+ <input type="email" value={email} onChange={(e) => setemail( e.target.value)} className="px-3 py-2 border focus:border-none w-[300px] text-white border-none bg-black rounded-lg" placeholder="Enter Your email"/>
  </div>
 
  <div className="flex flex-col gap-1 items-start justify-center">
  <label className="text-xl text-gray-300 ml-2">Password</label>
- <input type="password" value={user.password} onChange={(e) => setUser({...user, password: e.target.value})} className="px-3 py-2 border focus:border-none w-[300px] text-white border-none bg-black rounded-lg" placeholder="Enter your password"/>
+ <input type="password" value={password} onChange={(e) => setpassword( e.target.value)} className="px-3 py-2 border focus:border-none w-[300px] text-white border-none bg-black rounded-lg" placeholder="Enter your password"/>
  </div>
      </div>
      
