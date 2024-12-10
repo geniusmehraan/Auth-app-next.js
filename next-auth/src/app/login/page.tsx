@@ -20,8 +20,8 @@ const loginPage = () => {
             e.preventDefault();
 
             const response = await axios.post("/api/user/login",{
-                password:password,
-                email:email,
+                email,
+                password
                 
             })
 
@@ -33,13 +33,12 @@ const loginPage = () => {
             
             toast.success(data.message)
             
-              router.push("/")
+            router.push("/")
 
               return data
 
         } catch (error:any) {
-            console.log(error.message)
-            toast.error(error.message)
+            console.log(error)
         }
     }
 

@@ -1,29 +1,54 @@
-import bcrypt from "bcryptjs"
-import User from "@/models/user.model"
-import jwt from "jsonwebtoken"
-import { NextRequest,NextResponse } from "next/server"
-import connectToDB from "@/dbConfig/dbconfig"
-connectToDB()
-export async function POST(request: NextRequest){
-   const {email,password} = await request.json()
+import User from "@/models/user.model";
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import connectToDB from "@/dbConfig/dbconfig";
 
-   const user = await User.findOne({email})
-   
-   if(!user) return NextResponse.json({message: "User not found"},{status: 200})
+connectToDB();
 
+export async function POST(request: NextRequest) {
+  try {
+    const { email, password } = await request.json();
 
-    const isvalidpassword = await bcrypt.compare(password,user?.password)
+    // Input Validation
+    if (!email || !password) {
+      return NextResponse.json({ error: "Missing email or password" }, { status: 400 });
+    }
 
-    if(!isvalidpassword) return NextResponse.json({error: "Invalid password"})
+    // Find the user by email
+    const user = await User.findOne({ email });
 
-        const token = jwt.sign({
-            id:user?._id
-        },process.env.JWT_SECRET,{expiresIn: "1d"})
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 401 });
+    }
 
-        const response = NextResponse.json({message:"logged in succesfuly"})
+    // Compare passwords
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        response.cookies.set("token",token,{httpOnly: true,maxAge:60*60*24})
-    
-        return response
-        
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      { id: user._id, isVerified: user.isVerified },
+      process.env.JWT_SECRET!,
+      { expiresIn: "1d" }
+    );
+
+    // Create a response with user data
+    const response = NextResponse.json({
+      username: user.username,
+      email: user.email,
+    });
+
+    // Set the JWT token in a secure HTTP-only cookie
+    response.cookies.set("token", token, { httpOnly: true, secure: true, maxAge: 60 * 60 * 24 ,path: "/"}); 
+    const tokenString = request.cookies.get("token")?.value;
+    console.log(tokenString)
+    return response;
+  } catch (error: any) {
+    console.error("Error during login:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }

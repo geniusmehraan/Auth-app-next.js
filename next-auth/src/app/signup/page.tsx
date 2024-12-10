@@ -3,6 +3,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 
 
@@ -22,23 +23,16 @@ const signupPage = () => {
         
         
 
-            const response = await fetch("/api/user/signup", {
-              headers: {
-                "Content-Type": "application/json",
-              },
-              method: "POST",
-              body: JSON.stringify(user),
-            });
+            const response = await axios.post("/api/user/signup", user);
       
-            const data = await response.json();
+            const data = await response.data;
       
             if (data.error) {
               toast.error(data.error);
               return;
             }
-       router.push("/")
-       console.log("signup")
-            toast.success("Signup successful!");
+    
+    
 
         }
                 

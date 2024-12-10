@@ -1,26 +1,15 @@
-import next from "next";
 import { NextRequest, NextResponse } from "next/server";
 
-export const middleware = (request:NextRequest)=>{
-    const path = request.nextUrl.pathname
-  const isPublicPath = path==="/login"||path==="/signup"
+import axios from "axios";
+import User from "./models/user.model";
 
-  const token = request.cookies.get("token")?.value||""
-
-  if(!token&&!isPublicPath){
-    return NextResponse.redirect(new URL("/login",request.nextUrl))
-  }
-  if(token&&isPublicPath){
-    return NextResponse.redirect(new URL("/",request.nextUrl))
-  }
- 
+export const middleware = async (request: NextRequest) => {
+  const baseUrl = request.nextUrl.origin;
+  const path = request.nextUrl.pathname;
+  const isPublicPath = path === "/login" || path === "/signup" || path === "/verifyemail";
   
-}
+};
 
 export const config = {
-    matcher:[
-        "/",
-        "/login",
-        "/signup"
-    ]
-}
+  matcher: ["/", "/login", "/signup", "/verifyemail"],
+};
